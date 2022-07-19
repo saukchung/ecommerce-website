@@ -1,26 +1,36 @@
-ˇconst router = require('express').Router();
+const router = require('express').Router();
 const { Tag, Product, ProductTag } = require('../../models');
 
 // The `/api/tags` endpoint
 
 router.get('/', async (req, res) => {
   // find all tags
-  const data = await Tag.findAll(); 
+  const data = await Tag.findAll({
+    include: [{
+      model: Product,
+      through: ProductTag
+    }]
+  }); 
   // be sure to include its associated Product data
   res.json(data);
 });
 
 router.get('/:id', async (req, res) => {
   // find a single tag by its `id`
-  const data = await Tag.findByPk(req.params.id);
+  const data = await Tag.findByPk(req.params.id, {
+    include: [{
+      model: Product,
+      through: ProductTag
+    }]
+  });
   // be sure to include its associated Product data
   res.json(data);
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   // create a new tag
   const data =  await Tag.create(req.body);
-  res.send(`Added ${req.body.category_name}`)
+  res.send(`Added ${req.body.tag_name}`)
 });
 
 router.put('/:id', (req, res) => {
@@ -40,7 +50,7 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   // delete on tag by its `id` value
-  Tag.delete({where: { id: req.params.id }})
+  Tag.destroy({where: { id: req.params.id }})
 });
 
 module.exports = router;
